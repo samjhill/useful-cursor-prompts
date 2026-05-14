@@ -6,6 +6,25 @@ A **code auditing system** built from Cursor prompts. Each prompt is a focused, 
 
 ---
 
+## Running with Cursor Automations
+
+You can run these audits automatically using [Cursor Automations](https://cursor.com/docs/cloud-agent/automations) (cloud agents triggered by schedule, GitHub events, webhooks, etc.).
+
+1. **Create an automation** at [cursor.com/automations/new](https://cursor.com/automations/new).
+2. **Choose a trigger** (e.g. scheduled weekly, or when a pull request is opened).
+3. **Set the target repo and branch** in the trigger (the codebase you want to audit).
+4. **Write the automation prompt.** In the prompt, tell the agent to run one of the audits. Either:
+   - **Inline:** Paste the full contents of the prompt file (e.g. `code/boundaries.md`) and add: *“Run these instructions against the codebase in this repo. Apply the changes. Preserve behavior.”*
+   - **Reference this repo:** *“Clone or read from https://github.com/samjhill/useful-cursor-prompts. Run the audit in `code/boundaries.md` (or [other path](code/)) on this repository. Apply the changes. Preserve behavior.”*
+5. **Enable “Open pull request”** in the automation’s tools if you want the agent to create a branch and open a PR with the changes.
+6. **Save and run.** The automation will run when the trigger fires (or you can trigger manually if the trigger type supports it).
+
+**Tips:** Use one automation per audit type (e.g. “dead-code audit”) so each run is focused. For a full pass, run automations in the [suggested order](#suggested-order) and merge each PR before triggering the next, or use a webhook trigger and pass the audit name in the payload so one automation can run different audits.
+
+Automations use cloud agents and are [billed accordingly](https://cursor.com/docs/models-and-pricing#model-pricing).
+
+---
+
 ## Suggested order
 
 Run audits in this order when doing a full pass. Earlier passes clarify structure and surface area; later ones refactor logic and polish.
@@ -22,10 +41,11 @@ Run audits in this order when doing a full pass. Earlier passes clarify structur
 | 8 | [edge-case](code/edge-case.md) | Audit error handling, null/empty states, and loading/failure states. |
 | 9 | [security-audit](code/security-audit.md) | Secrets, injection, auth, input validation; document or fix footguns. |
 | 10 | [test-suite](code/test-suite.md) | Trim low-value tests and add a few high-signal tests where risk is highest. |
-| 11 | **Frontend** [code cleanup](code/frontend/frontend-code-cleanup.md) → [logic cleanup](code/frontend/frontend-logic-cleanup.md) → [a11y](code/frontend/a11y.md) | If the repo has a frontend: structure, then state/effects/forms, then accessibility. |
-| 12 | **Backend** [code cleanup](code/backend/backend-code-cleanup.md) → [logic cleanup](code/backend/backend-logic-cleanup.md) → [logging](code/backend/logging.md) | If the repo has a backend: structure, then business logic, then logging consistency. |
-| 13 | [performance](code/performance.md) | After main cleanups. Obvious inefficiencies (N+1, re-renders, bundle size); document bigger wins. |
-| 14 | [engineer-onboarding](code/engineer-onboarding.md) | Last. Improve README, entry points, and inline comments so a new engineer can be productive quickly. |
+| 11 | [github-actions-ci-cost](code/github-actions-ci-cost.md) | When CI is slow or costly: audit workflows for waste; safe YAML and CI-script fixes (concurrency, caching, path filters, gates). |
+| 12 | **Frontend** [code cleanup](code/frontend/frontend-code-cleanup.md) → [logic cleanup](code/frontend/frontend-logic-cleanup.md) → [a11y](code/frontend/a11y.md) | If the repo has a frontend: structure, then state/effects/forms, then accessibility. |
+| 13 | **Backend** [code cleanup](code/backend/backend-code-cleanup.md) → [logic cleanup](code/backend/backend-logic-cleanup.md) → [logging](code/backend/logging.md) | If the repo has a backend: structure, then business logic, then logging consistency. |
+| 14 | [performance](code/performance.md) | After main cleanups. Obvious inefficiencies (N+1, re-renders, bundle size); document bigger wins. |
+| 15 | [engineer-onboarding](code/engineer-onboarding.md) | Last. Improve README, entry points, and inline comments so a new engineer can be productive quickly. |
 
 **Quick passes:** For a single concern, run only the prompt you need (e.g. just [dead-code](code/dead-code.md) or [naming-clarity](code/naming-clarity.md)). Order matters less when you’re not doing a full pass.
 
@@ -48,6 +68,7 @@ Run audits in this order when doing a full pass. Earlier passes clarify structur
 | [security-audit](code/security-audit.md) | Secrets, injection, auth, input validation; fix or document footguns. |
 | [performance](code/performance.md) | Frontend and backend: re-renders, N+1, bundle size; low-risk fixes and documented wins. |
 | [test-suite](code/test-suite.md) | Evaluate test value; remove duplicates and implementation-detail tests, add high-signal tests where risk is high. |
+| [github-actions-ci-cost](code/github-actions-ci-cost.md) | Audit GitHub Actions for slow or wasteful CI/CD; concurrency, caching, path filters, gates, timeouts—without changing app behavior unless needed for CI reliability. |
 | [engineer-onboarding](code/engineer-onboarding.md) | Improve README, entry points, and comments so a new engineer can be productive in about an hour. |
 
 ### Frontend
